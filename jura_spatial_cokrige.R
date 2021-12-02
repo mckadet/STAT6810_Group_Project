@@ -26,7 +26,7 @@ gridded(jura.grid) = TRUE
 
 # sample plots of target variables
 spplot(jura.pred, 'Cu')
-spplot(jura.pred, 'Cd')
+spplot(jura.pred, 'Cd', main = "Cd Concentration Levels")
 spplot(jura.pred, 'Pb')
 
 # using inverse distance weighting method to predict values for target variables
@@ -34,7 +34,7 @@ cop.raw <- idw(Cu ~ 1, jura.pred, jura.grid)
 spplot(cop.raw['var1.pred'])
 
 cad.raw <- idw(Cd ~ 1, jura.pred, jura.grid)
-spplot(cad.raw['var1.pred'])
+spplot(cad.raw['var1.pred'], main = "Predicted Cd Concentration (using inverse distance)")
 
 lead.raw <- idw(Pb ~ 1, jura.pred, jura.grid)
 spplot(lead.raw['var1.pred'])
@@ -86,7 +86,6 @@ lcdr.fit <- fit.variogram(lcdr.vgm, model = vgm("Exp"))
 plot(lcdr.vgm, lcdr.fit)
 
 # kriging
-
 lcd.kriged <- krige(log(Cd) ~ 1, jura.pred, jura.grid, model = lcd.fit)
 lcdr.kriged <- krige(log(Cd) ~ log(Zn), jura.pred, jura.grid, model = lcdr.fit)
 
@@ -96,15 +95,38 @@ spplot(lcdr.kriged["var1.pred"], main = "Kriging Prediction of Cadmium with Regr
 
 # cokriging
 
-xyplot(jura.pred$Cd ~ jura.pred$Zn, jura.pred)
-xyplot(log(jura.pred$Cd) ~ log(jura.pred$Zn), jura.pred)
+xyplot(jura.pred$Cd ~ jura.pred$Zn, jura.pred, 
+       main = "Cd by Zinc Concentration",
+       xlab = "Zinc Concentration",
+       ylab = "Cd Concentration")
+xyplot(log(jura.pred$Cd) ~ log(jura.pred$Zn), jura.pred, main = "Logged Cd by Logged Zinc") # This is great to use as justification for why we transformed both vars
 
+library(ggplot2)
+ggplot(as.data.frame(jura.pred), aes(x = Zn, y = Cd)) + 
+  geom_point(col = "blue", alpha = 0.5, size = 2.5) + 
+  geom_smooth(col = "grey", se = F, method = "lm") + 
+  theme_bw() + 
+  ggtitle("Unlogged") + 
+  xlab("Zinc") +
+  ylab("Cadmium")
+
+ggplot(as.data.frame(jura.pred), aes(x = log(Zn), y = log(Cd))) + 
+  geom_point(col = "blue", alpha = 0.5, size = 2.5) + 
+  geom_smooth(col = "grey", se = F, method = "lm") + 
+  theme_bw() + 
+  ggtitle("Logged") + 
+  xlab("log(Zinc)") +
+  ylab("log(Cadmium)")
+
+# build gstat object with data
 jura.g <- gstat(NULL, id = "Cd", formula = log(Cd) ~ 1, data = jura.pred, nmax = 10)
 jura.g <- gstat(jura.g, id = "Zn", formula = log(Zn) ~ 1, data = jura.pred, nmax = 10)
+
+# plot variogram from fitted model
 x <- variogram(jura.g)
 plot(x)
 x <- variogram(jura.g, cutoff = 1.3)
-jura.fit <- fit.lmc(x, jura.g, vgm("Exp"))
+jura.fit <- fit.lmc(x, jura.g, vgm(1, "Exp", 1.2, 1))
 plot(x, jura.fit)
 
 jura.g <- gstat(jura.g, model = vgm(1, "Exp", 1.2, 1), fill.all = T)
@@ -124,3 +146,13 @@ print(pl3,split=c(2,1,2,2),more=T)
 pl4=spplot(cz["Zn.se"],main="log-zinc standard error")
 print(pl4,split=c(2,2,2,2),more=T)
 
+# or
+library(gridExtra)
+cz$Cd.se = sqrt(cz$Cd.var)
+cz$Zn.se = sqrt(cz$Zn.var)
+pl1 = spplot(cz["Cd.pred"], main = "log-cadmium prediction")
+pl2 = spplot(cz["Zn.pred"], main = "log-zinc prediction")
+pl3 = spplot(cz["Cd.se"], main = "log-cadmium standard error")
+pl4 = spplot(cz["Zn.se"], main = "log-zinc standard error")
+
+grid.arrange(pl1,pl2,pl3,pl4, nrow = 2)

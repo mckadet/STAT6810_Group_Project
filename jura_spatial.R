@@ -50,7 +50,7 @@ lead.vgm <- variogram(Pb ~ 1, jura.pred)
 plot(lead.vgm)
 
 
-# looking for correlations between target variables and preditor variables
+# looking for correlations between target variables and predictor variables
 
 # first look at landuse against target variables
 plot(Cu ~ Landuse, jura.pred)
@@ -93,7 +93,7 @@ plot(cad.vgm.3, cad.fit.3)
 
 # kriging
 cad.kriged = krige(log(Cd)~1, jura.pred, 
-                   jura.grid, model = cad.fit)
+                   jura.grid, model = cad.fit.3)
 spplot(cad.kriged["var1.pred"])
 
 

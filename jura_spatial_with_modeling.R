@@ -84,9 +84,9 @@ logged <- ggplot(prediction.dat,aes(x=log(Zn), y=log(Cd))) + geom_point() + geom
 grid.arrange(unlogged, logged, nrow = 2)
 
 ggplot(prediction.dat, aes(x=Xloc, y = Yloc, col = Cd)) + 
-  geom_point(alpha = 5, size = 2) + geom_tile() +
+  geom_point(alpha = 15, size = 3) + geom_tile() +
   scale_color_distiller(palette="Spectral",na.value=NA) +
-  theme_bw() + ggtitle("Cd by Location")
+  theme_bw() + ggtitle("Cd Concentration by Location")
 
 ## Modeling Spaptial Structure
 # Linear Model
