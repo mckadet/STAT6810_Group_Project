@@ -121,4 +121,16 @@ grid.arrange(pl1,pl2,pl3,pl4, nrow = 2)
 mean(cad.raw$var1.pred^2)
 mean(cz$Cd.pred^2)
 
+# mse function way 
+mse(jura.pred$Cd, cad.raw$var1.pred)
+mse(jura.pred$Cd, cz$Cd.pred)
+
+# 10-fold cross validation
+idw.cv <- krige.cv(Cd ~ 1, jura.pred, nfold = 10)
+cokrige.cv <- gstat.cv(jura.g, nfold = 10)
+
+# mean squared error calculation
+mean(idw.cv$residual^2)
+mean(cokrige.cv$residual^2)
+
 
